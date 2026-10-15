@@ -28,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Journalisation de chaque acces interdit (403).
         $exceptions->render(function (Throwable $e, Request $request): void {
             if ($e instanceof HttpException && $e->getStatusCode() === 403) {
-                Log::warning('Acces interdit', [
+                Log::channel('business')->warning('Acces interdit', [
                     'user_id' => $request->user()?->id,
                     'farm_id' => $request->user()?->farm_id,
                     'url' => $request->fullUrl(),

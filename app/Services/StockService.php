@@ -10,6 +10,7 @@ use App\Models\PigLot;
 use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -161,6 +162,18 @@ class StockService
 
             // 5. Mettre a jour la quantite (seul endroit du projet ou le stock est modifie)
             $locked->forceFill(['quantity' => $after])->save();
+
+            // Journalisation sensible : ajustement d'inventaire
+            if ($type === StockMovementType::Adjustment) {
+                Log::channel('business')->warning('Ajustement de stock', [
+                    'feed_type_id' => $locked->id,
+                    'farm_id' => $locked->farm_id,
+                    'user_id' => $user->id,
+                    'quantity_before' => $before,
+                    'quantity_after' => $after,
+                    'reason' => $reason,
+                ]);
+            }
 
             // 6. Evenement si le seuil minimum est franchi vers le bas
             if ($before > (float) $locked->minimum_threshold && $after <= (float) $locked->minimum_threshold) {
