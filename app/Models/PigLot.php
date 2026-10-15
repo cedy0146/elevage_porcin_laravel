@@ -130,4 +130,60 @@ class PigLot extends Model
     {
         $query->where('status', LotStatus::Active);
     }
+
+    /**
+     * Recherche partielle sur le code du lot.
+     */
+    #[Scope]
+    protected function search(Builder $query, string $term): void
+    {
+        $query->where('code', 'like', '%'.$term.'%');
+    }
+
+    /**
+     * Filtre par statut (valeur d'enum déjà validée en amont).
+     */
+    #[Scope]
+    protected function statusIs(Builder $query, string $status): void
+    {
+        $query->where('status', $status);
+    }
+
+    #[Scope]
+    protected function forPen(Builder $query, int $penId): void
+    {
+        $query->where('pen_id', $penId);
+    }
+
+    #[Scope]
+    protected function arrivedFrom(Builder $query, ?string $from): void
+    {
+        if ($from !== null) {
+            $query->where('arrived_on', '>=', $from);
+        }
+    }
+
+    #[Scope]
+    protected function arrivedTo(Builder $query, ?string $to): void
+    {
+        if ($to !== null) {
+            $query->where('arrived_on', '<=', $to);
+        }
+    }
+
+    /**
+     * Tri protégé : la colonne est validée contre une liste blanche.
+     *
+     * @var array<int, string>
+     */
+    public const SORTABLE = ['code', 'arrived_on', 'status'];
+
+    #[Scope]
+    protected function sortApi(Builder $query, string $sort, string $direction): void
+    {
+        $column = in_array($sort, self::SORTABLE, true) ? $sort : 'created_at';
+        $direction = $direction === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($column, $direction)->orderBy('id', $direction);
+    }
 }

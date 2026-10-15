@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToFarm;
 use Database\Factories\FeedingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,5 +57,55 @@ class Feeding extends Model
     public function stockMovement(): BelongsTo
     {
         return $this->belongsTo(StockMovement::class);
+    }
+
+    #[Scope]
+    protected function forLot(Builder $query, int $pigLotId): void
+    {
+        $query->where('pig_lot_id', $pigLotId);
+    }
+
+    #[Scope]
+    protected function forFeedType(Builder $query, int $feedTypeId): void
+    {
+        $query->where('feed_type_id', $feedTypeId);
+    }
+
+    #[Scope]
+    protected function forUser(Builder $query, int $userId): void
+    {
+        $query->where('user_id', $userId);
+    }
+
+    #[Scope]
+    protected function from(Builder $query, ?string $from): void
+    {
+        if ($from !== null) {
+            $query->where('fed_on', '>=', $from);
+        }
+    }
+
+    #[Scope]
+    protected function to(Builder $query, ?string $to): void
+    {
+        if ($to !== null) {
+            $query->where('fed_on', '<=', $to);
+        }
+    }
+
+    /**
+     * Tri protégé : la colonne est validée contre une liste blanche.
+     *
+     * @var array<int, string>
+     */
+    public const SORTABLE = ['fed_on', 'created_at'];
+
+    #[Scope]
+    protected function sortApi(Builder $query, string $sort, string $direction): void
+    {
+        $column = in_array($sort, self::SORTABLE, true) ? $sort : 'created_at';
+        $direction = $direction === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($column, $direction)->orderBy('id', $direction);
     }
 }
