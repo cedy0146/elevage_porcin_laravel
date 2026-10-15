@@ -82,6 +82,45 @@ it('un technicien recoit 403 sur les finances', function () {
     ])->assertForbidden();
 });
 
+it('un technicien recoit 403 sur les ecritures managers et peut distribuer', function () {
+    [$manager, $lot, $feedType] = apiLotContext();
+    $technician = User::factory()->technician()->create(['farm_id' => $manager->farm_id]);
+
+    $this->actingAs($technician, 'sanctum')
+        ->postJson('/api/v1/pens', ['code' => 'P-NEW', 'name' => 'Loge', 'capacity' => 30, 'type' => 'fattening'])
+        ->assertForbidden();
+
+    $this->actingAs($technician, 'sanctum')
+        ->postJson('/api/v1/sales', [
+            'pig_lot_id' => $lot->id,
+            'head_count' => 1,
+            'total_weight' => 100,
+            'price_per_kg' => 9000,
+            'customer_name' => 'Client',
+            'sold_on' => now()->toDateString(),
+        ])
+        ->assertForbidden();
+
+    // Le technicien enregistre les distributions au quotidien.
+    $this->actingAs($technician, 'sanctum')
+        ->postJson('/api/v1/feedings', [
+            'pig_lot_id' => $lot->id,
+            'feed_type_id' => $feedType->id,
+            'quantity' => 5,
+        ])
+        ->assertCreated();
+});
+
+it('l admin recoit 403 sur les donnees metier', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin, 'sanctum')->getJson('/api/v1/pig-lots')->assertForbidden();
+    $this->actingAs($admin, 'sanctum')->getJson('/api/v1/feed-types')->assertForbidden();
+    $this->actingAs($admin, 'sanctum')->postJson('/api/v1/pens', [
+        'code' => 'P-ADM', 'name' => 'Loge', 'capacity' => 30, 'type' => 'fattening',
+    ])->assertForbidden();
+});
+
 it('un sort hors liste blanche n injecte jamais de sql', function () {
     [$manager, $lot] = apiLotContext();
 

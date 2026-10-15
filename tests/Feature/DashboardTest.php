@@ -3,9 +3,12 @@
 use App\Enums\ActivityType;
 use App\Models\Activity;
 use App\Models\Farm;
+use App\Models\FeedType;
 use App\Models\Pen;
+use App\Models\PigLot;
 use App\Models\User;
 use App\Services\DashboardService;
+use App\Services\FeedingService;
 use App\Services\LotService;
 use Illuminate\Support\Facades\Cache;
 
@@ -64,4 +67,34 @@ it('met le tableau de bord en cache et le recharge apres invalidation', function
 
     Cache::forget('farm:'.$farm->id.':dashboard');
     expect(Cache::has('farm:'.$farm->id.':dashboard'))->toBeFalse();
+});
+
+it('invalide le cache du tableau de bord apres une distribution', function () {
+    $user = User::factory()->technician()->create();
+    $farm = Farm::find($user->farm_id);
+
+    $pen = Pen::factory()->create(['farm_id' => $farm->id, 'capacity' => 80]);
+    $lot = PigLot::factory()->active()->create([
+        'farm_id' => $farm->id,
+        'pen_id' => $pen->id,
+        'initial_count' => 30,
+    ]);
+    $feedType = FeedType::factory()->create([
+        'farm_id' => $farm->id,
+        'quantity' => 100,
+        'unit_price' => 3000,
+    ]);
+
+    // Le dashboard est mis en cache par la premiere lecture.
+    app(DashboardService::class)->forFarm($farm);
+    expect(Cache::has('farm:'.$farm->id.':dashboard'))->toBeTrue();
+
+    // L'evenement FeedingRecorded (apres commit) invalide la cle via le listener.
+    app(FeedingService::class)->distribute($lot, $feedType, 25, $user);
+
+    expect(Cache::has('farm:'.$farm->id.':dashboard'))->toBeFalse();
+
+    // La lecture suivante reconstruit et remet en cache les indicateurs.
+    app(DashboardService::class)->forFarm($farm);
+    expect(Cache::has('farm:'.$farm->id.':dashboard'))->toBeTrue();
 });

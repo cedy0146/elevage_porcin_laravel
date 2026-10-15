@@ -58,6 +58,26 @@ it('ne notifie pas quand le stock reste au dessus du seuil', function () {
     Notification::assertNotSentTo($manager, StockCriticalNotification::class);
 });
 
+it('lobservation du seuil declenche StockCritical une seule fois', function () {
+    Event::fake([StockCritical::class]);
+
+    $farm = Farm::factory()->create();
+    $user = User::factory()->technician()->create(['farm_id' => $farm->id]);
+
+    $feedType = FeedType::factory()->create([
+        'farm_id' => $farm->id,
+        'quantity' => 60,
+        'minimum_threshold' => 50,
+    ]);
+
+    // 60 -> 40 : franchissement du seuil, un seul dispatch.
+    app(StockService::class)->issue($feedType, 20, $user, 'Perte constatee');
+    // 40 -> 30 : deja sous le seuil, aucun nouveau dispatch.
+    app(StockService::class)->issue($feedType, 10, $user, 'Perte constatee');
+
+    Event::assertDispatchedTimes(StockCritical::class, 1);
+});
+
 it('le job de detection declenche l evenement pour les stocks sous le seuil', function () {
     Event::fake([StockCritical::class]);
 
