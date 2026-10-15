@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\HealthEventStatus;
 use App\Models\Activity;
 use App\Models\Farm;
 use App\Models\FeedType;
+use App\Models\HealthEvent;
 use App\Models\Mortality;
 use App\Models\Pen;
 use App\Models\PigLot;
@@ -119,6 +121,15 @@ class DashboardService
         $alertStocks = collect($stocks)->filter(fn (array $stock): bool => $stock['is_critical'])->pluck('name')->values()->all();
         $alertAutonomy = $autonomy->filter(fn (array $item): bool => $item['status'] === 'critical')->pluck('name')->values()->all();
 
+        $healthOverdueCount = HealthEvent::query()
+            ->withoutGlobalScopes()
+            ->join('vaccine_schedules', 'vaccine_schedules.id', '=', 'health_events.vaccine_schedule_id')
+            ->where('health_events.farm_id', $farm->id)
+            ->where('health_events.status', HealthEventStatus::Todo)
+            ->whereNotNull('health_events.scheduled_on')
+            ->whereRaw("date(health_events.scheduled_on, '+' || vaccine_schedules.tolerance_days || ' days') < date('now')")
+            ->count();
+
         return [
             'active_lots_count' => $activeLots->count(),
             'pens_count' => Pen::query()->withoutGlobalScopes()->where('farm_id', $farm->id)->count(),
@@ -142,6 +153,7 @@ class DashboardService
                 'critical_stocks' => $alertStocks,
                 'autonomy' => $alertAutonomy,
                 'mortality_lots' => $mortalityAlerts,
+                'health_overdue_count' => $healthOverdueCount,
             ],
         ];
     }

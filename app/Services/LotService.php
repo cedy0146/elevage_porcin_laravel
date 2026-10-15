@@ -16,7 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class LotService
 {
-    public function __construct(private FinanceService $finance) {}
+    public function __construct(
+        private FinanceService $finance,
+        private HealthService $health,
+    ) {}
 
     /**
      * Ouvre un nouveau lot dans une loge.
@@ -83,7 +86,10 @@ class LotService
             // 7. Passer la loge a occupee
             $pen->forceFill(['status' => PenStatus::Occupied])->save();
 
-            // 8. Enregistrer l'achat eventuel du lot
+            // 8. Planifier les actes sanitaires du calendrier (meme transaction)
+            $this->health->planForLot($lot);
+
+            // 9. Enregistrer l'achat eventuel du lot
             if ($purchaseCost !== null && $purchaseCost > 0) {
                 $this->finance->recordExpense(
                     farm: $pen->farm,

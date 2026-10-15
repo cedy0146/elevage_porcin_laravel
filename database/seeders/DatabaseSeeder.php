@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             FarmSeeder::class,
             UserSeeder::class,
             PenSeeder::class,
+            VaccineScheduleSeeder::class,
             FeedTypeSeeder::class,
             LotSeeder::class,
         ]);

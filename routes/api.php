@@ -7,12 +7,14 @@ use App\Http\Controllers\Api\V1\ExpensesController;
 use App\Http\Controllers\Api\V1\FarmsController;
 use App\Http\Controllers\Api\V1\FeedingsController;
 use App\Http\Controllers\Api\V1\FeedTypesController;
+use App\Http\Controllers\Api\V1\HealthEventsController;
 use App\Http\Controllers\Api\V1\MortalitiesController;
 use App\Http\Controllers\Api\V1\PensController;
 use App\Http\Controllers\Api\V1\PigLotsController;
 use App\Http\Controllers\Api\V1\SalesController;
 use App\Http\Controllers\Api\V1\StockMovementsController;
 use App\Http\Controllers\Api\V1\UsersController;
+use App\Http\Controllers\Api\V1\VaccineSchedulesController;
 use App\Http\Controllers\Api\V1\WeighingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +50,10 @@ Route::prefix('v1')->group(function () {
 
         Route::apiResource('expenses', ExpensesController::class);
         Route::apiResource('sales', SalesController::class)->only(['index', 'store', 'show']);
+
+        Route::apiResource('health-events', HealthEventsController::class)->only(['index', 'store', 'show']);
+        Route::post('health-events/{health_event}/done', [HealthEventsController::class, 'done']);
+        Route::apiResource('vaccine-schedules', VaccineSchedulesController::class);
 
         Route::middleware('role:admin')->group(function () {
             Route::apiResource('farms', FarmsController::class);
