@@ -2,24 +2,26 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
-     * Seed the application's database.
+     * Jeu de demonstration reconstructible : php artisan migrate:fresh --seed.
+     * La file est configurée en sync dans LotSeeder pour que les listeners
+     * (notification d'alerte de stock) s'exécutent pendant le seeding.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            FarmSeeder::class,
+            UserSeeder::class,
+            PenSeeder::class,
+            FeedTypeSeeder::class,
+            LotSeeder::class,
         ]);
+
+        Carbon::setTestNow();
     }
 }
