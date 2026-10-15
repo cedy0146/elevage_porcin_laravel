@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Enums\BreederStatus;
 use App\Enums\HealthEventStatus;
+use App\Enums\MatingStatus;
 use App\Models\Activity;
+use App\Models\Breeder;
 use App\Models\Farm;
 use App\Models\FeedType;
 use App\Models\HealthEvent;
+use App\Models\Mating;
 use App\Models\Mortality;
 use App\Models\Pen;
 use App\Models\PigLot;
@@ -130,6 +134,31 @@ class DashboardService
             ->whereRaw("date(health_events.scheduled_on, '+' || vaccine_schedules.tolerance_days || ' days') < date('now')")
             ->count();
 
+        $pregnantSows = Breeder::query()
+            ->withoutGlobalScopes()
+            ->where('farm_id', $farm->id)
+            ->where('sex', 'sow')
+            ->where('status', BreederStatus::Pregnant)
+            ->count();
+
+        $upcomingFarrowings = Mating::query()
+            ->withoutGlobalScopes()
+            ->where('farm_id', $farm->id)
+            ->whereIn('status', [MatingStatus::Pending, MatingStatus::Confirmed])
+            ->whereBetween('expected_farrowing_on', [
+                now()->toDateString(),
+                now()->addDays(7)->toDateString(),
+            ])
+            ->with('sow:id,tag')
+            ->get(['id', 'sow_id', 'expected_farrowing_on'])
+            ->map(fn (Mating $mating): array => [
+                'id' => $mating->id,
+                'sow' => $mating->sow?->tag,
+                'expected_farrowing_on' => $mating->expected_farrowing_on?->toDateString(),
+            ])
+            ->values()
+            ->all();
+
         return [
             'active_lots_count' => $activeLots->count(),
             'pens_count' => Pen::query()->withoutGlobalScopes()->where('farm_id', $farm->id)->count(),
@@ -149,6 +178,8 @@ class DashboardService
             'average_feed_conversion_ratio' => $averageConversionRatio,
             'global_mortality_rate' => $globalMortalityRate,
             'stock_autonomy' => $autonomy->values()->all(),
+            'pregnant_sows' => $pregnantSows,
+            'upcoming_farrowings' => $upcomingFarrowings,
             'alerts' => [
                 'critical_stocks' => $alertStocks,
                 'autonomy' => $alertAutonomy,

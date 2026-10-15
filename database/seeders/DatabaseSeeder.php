@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             VaccineScheduleSeeder::class,
             FeedTypeSeeder::class,
             LotSeeder::class,
+            ReproductionSeeder::class,
         ]);
 
         Carbon::setTestNow();

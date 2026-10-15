@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'pig_lot_id',
+    'breeder_id',
     'vaccine_schedule_id',
     'type',
     'name',
@@ -46,6 +47,11 @@ class HealthEvent extends Model
     public function pigLot(): BelongsTo
     {
         return $this->belongsTo(PigLot::class);
+    }
+
+    public function breeder(): BelongsTo
+    {
+        return $this->belongsTo(Breeder::class);
     }
 
     public function vaccineSchedule(): BelongsTo

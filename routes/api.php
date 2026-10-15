@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\Api\V1\ActivitiesController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BreedersController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\ExpensesController;
 use App\Http\Controllers\Api\V1\FarmsController;
+use App\Http\Controllers\Api\V1\FarrowingsController;
 use App\Http\Controllers\Api\V1\FeedingsController;
 use App\Http\Controllers\Api\V1\FeedTypesController;
 use App\Http\Controllers\Api\V1\HealthEventsController;
+use App\Http\Controllers\Api\V1\MatingsController;
 use App\Http\Controllers\Api\V1\MortalitiesController;
 use App\Http\Controllers\Api\V1\PensController;
 use App\Http\Controllers\Api\V1\PigLotsController;
@@ -54,6 +57,13 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('health-events', HealthEventsController::class)->only(['index', 'store', 'show']);
         Route::post('health-events/{health_event}/done', [HealthEventsController::class, 'done']);
         Route::apiResource('vaccine-schedules', VaccineSchedulesController::class);
+
+        Route::apiResource('breeders', BreedersController::class);
+        Route::apiResource('matings', MatingsController::class)->only(['index', 'store', 'show']);
+        Route::post('matings/{mating}/failed', [MatingsController::class, 'failed']);
+        Route::post('matings/{mating}/farrowing', [MatingsController::class, 'farrowing']);
+        Route::apiResource('farrowings', FarrowingsController::class)->only(['index', 'show']);
+        Route::post('farrowings/{farrowing}/weaning', [FarrowingsController::class, 'weaning']);
 
         Route::middleware('role:admin')->group(function () {
             Route::apiResource('farms', FarmsController::class);
