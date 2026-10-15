@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ActivityType;
+use App\Models\Concerns\BelongsToFarm;
 use Database\Factories\ActivityFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Activity extends Model
 {
     /** @use HasFactory<ActivityFactory> */
-    use HasFactory;
+    use BelongsToFarm, HasFactory;
 
     /**
      * Get the attributes that should be cast.
@@ -27,11 +28,6 @@ class Activity extends Model
             'performed_on' => 'date',
             'cost' => 'decimal:2',
         ];
-    }
-
-    public function farm(): BelongsTo
-    {
-        return $this->belongsTo(Farm::class);
     }
 
     public function pigLot(): BelongsTo

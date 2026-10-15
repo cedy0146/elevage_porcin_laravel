@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Database\Factories\SaleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */
-    use HasFactory;
+    use BelongsToFarm, HasFactory;
 
     /**
      * Get the attributes that should be cast.
@@ -35,11 +36,6 @@ class Sale extends Model
             'amount' => 'decimal:2',
             'sold_on' => 'date',
         ];
-    }
-
-    public function farm(): BelongsTo
-    {
-        return $this->belongsTo(Farm::class);
     }
 
     public function pigLot(): BelongsTo

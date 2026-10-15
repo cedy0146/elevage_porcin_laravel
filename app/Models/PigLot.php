@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\LotStatus;
+use App\Models\Concerns\BelongsToFarm;
 use Database\Factories\PigLotFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PigLot extends Model
 {
     /** @use HasFactory<PigLotFactory> */
-    use HasFactory;
+    use BelongsToFarm, HasFactory;
 
     /**
      * Get the attributes that should be cast.
@@ -43,11 +44,6 @@ class PigLot extends Model
             'closed_on' => 'date',
             'status' => LotStatus::class,
         ];
-    }
-
-    public function farm(): BelongsTo
-    {
-        return $this->belongsTo(Farm::class);
     }
 
     public function pen(): BelongsTo

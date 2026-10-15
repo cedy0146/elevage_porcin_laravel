@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StockMovementType;
+use App\Models\Concerns\BelongsToFarm;
 use Database\Factories\StockMovementFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockMovement extends Model
 {
     /** @use HasFactory<StockMovementFactory> */
-    use HasFactory;
+    use BelongsToFarm, HasFactory;
 
     /**
      * Get the attributes that should be cast.
@@ -38,11 +39,6 @@ class StockMovement extends Model
             'unit_cost' => 'decimal:2',
             'moved_at' => 'datetime',
         ];
-    }
-
-    public function farm(): BelongsTo
-    {
-        return $this->belongsTo(Farm::class);
     }
 
     public function feedType(): BelongsTo

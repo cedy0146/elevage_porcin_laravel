@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Database\Factories\WeighingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Weighing extends Model
 {
     /** @use HasFactory<WeighingFactory> */
-    use HasFactory;
+    use BelongsToFarm, HasFactory;
 
     /**
      * Get the attributes that should be cast.
@@ -26,11 +27,6 @@ class Weighing extends Model
             'average_weight' => 'decimal:2',
             'sample_size' => 'integer',
         ];
-    }
-
-    public function farm(): BelongsTo
-    {
-        return $this->belongsTo(Farm::class);
     }
 
     public function pigLot(): BelongsTo

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ExpenseCategory;
+use App\Models\Concerns\BelongsToFarm;
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Expense extends Model
 {
     /** @use HasFactory<ExpenseFactory> */
-    use HasFactory;
+    use BelongsToFarm, HasFactory;
 
     /**
      * Get the attributes that should be cast.
@@ -27,11 +28,6 @@ class Expense extends Model
             'amount' => 'decimal:2',
             'spent_on' => 'date',
         ];
-    }
-
-    public function farm(): BelongsTo
-    {
-        return $this->belongsTo(Farm::class);
     }
 
     public function pigLot(): BelongsTo
